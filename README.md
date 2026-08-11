@@ -1,6 +1,6 @@
 # Seguimiento de dieta
 
-Página web de una sola pieza (`seguimiento.html`) para el seguimiento diario de peso, medidas y fases de dieta (definición / mantenimiento / ganancia).
+Página web de una sola pieza (`index.html`) para el seguimiento diario de peso, medidas y fases de dieta (definición / mantenimiento / ganancia).
 
 ## Datos en la nube
 
@@ -13,4 +13,4 @@ El estado de la sincronización se muestra bajo el título (☁️ sincronizado 
 
 ## Uso
 
-Abrir `seguimiento.html` en el navegador, o servirlo con GitHub Pages.
+Con GitHub Pages: https://kerone.github.io/dieta/ (o abrir `index.html` directamente en el navegador).
