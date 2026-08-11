@@ -256,7 +256,7 @@ const PHASES = {
 
 // ---------- sincronización con jsonbin.io ----------
 const JSONBIN_BIN_ID = '6a7b3aa8f5f4af5e2907b0f0';
-const JSONBIN_KEY = '$2a$10$byEkgCiPtr6uA9j.sw5Uiuld00jGPRMT1Rn9TlhHYbPe3CFfaEu6G';
+const JSONBIN_KEY = '$2a$10$AYchls3GlwtLcbdpqAdaluqqIxqmELjQBy0bzQWQxBL7d17g3kuuK';
 const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID;
 
 function setSync(msg, isErr) {
@@ -267,7 +267,7 @@ function setSync(msg, isErr) {
 async function loadRemote() {
   setSync('☁️ Cargando datos de la nube…');
   try {
-    const res = await fetch(JSONBIN_URL + '/latest', { headers: { 'X-Master-Key': JSONBIN_KEY } });
+    const res = await fetch(JSONBIN_URL + '/latest', { headers: { 'X-Access-Key': JSONBIN_KEY } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const rec = data.record;
@@ -290,7 +290,7 @@ async function pushRemote() {
   try {
     const res = await fetch(JSONBIN_URL, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+      headers: { 'Content-Type': 'application/json', 'X-Access-Key': JSONBIN_KEY },
       body: JSON.stringify(S),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
