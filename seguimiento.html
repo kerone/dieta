@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seguimiento Dieta — Carlos</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;      /* peso: media semanal */
+    --series-1-light: #9ec5f4; /* peso: diario (misma medida, paso claro) */
+    --series-2: #eb6834;      /* cintura */
+    --good: #0ca30c;
+    --good-text: #006300;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+    --accent-wash: rgba(42,120,214,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5;
+      --series-1-light: #1c5cab;
+      --series-2: #d95926;
+      --good: #0ca30c;
+      --good-text: #0ca30c;
+      --accent-wash: rgba(57,135,229,0.12);
+    }
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    padding: 20px;
+    max-width: 1080px;
+    margin: 0 auto;
+    line-height: 1.45;
+  }
+  h1 { font-size: 1.35rem; margin-bottom: 2px; }
+  .sub { color: var(--text-secondary); font-size: .85rem; margin-bottom: 18px; }
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .card h2 { font-size: .95rem; margin-bottom: 10px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 14px; }
+  .tile {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .tile .lbl { font-size: .72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+  .tile .val { font-size: 1.5rem; font-weight: 650; margin-top: 2px; }
+  .tile .det { font-size: .75rem; color: var(--text-secondary); margin-top: 2px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  label { display:block; font-size: .75rem; color: var(--text-secondary); margin-bottom: 3px; }
+  input[type=number], input[type=date] {
+    background: var(--page); color: var(--text-primary);
+    border: 1px solid var(--baseline); border-radius: 8px;
+    padding: 7px 10px; font-size: .95rem; width: 120px;
+  }
+  button {
+    background: var(--series-1); color: #fff; border: none;
+    border-radius: 8px; padding: 8px 16px; font-size: .88rem;
+    cursor: pointer; font-weight: 550;
+  }
+  button:hover { filter: brightness(1.08); }
+  button.ghost {
+    background: transparent; color: var(--text-primary);
+    border: 1px solid var(--baseline);
+  }
+  button.small { padding: 5px 10px; font-size: .78rem; }
+  .phase-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .phase-tab {
+    padding: 7px 14px; border-radius: 999px; font-size: .85rem;
+    border: 1px solid var(--baseline); cursor: pointer;
+    background: transparent; color: var(--text-secondary); font-weight: 500;
+  }
+  .phase-tab.active { background: var(--accent-wash); border-color: var(--series-1); color: var(--text-primary); font-weight: 650; }
+  .meal { padding: 9px 0; border-bottom: 1px solid var(--grid); font-size: .9rem; }
+  .meal:last-child { border-bottom: none; }
+  .meal .time { font-weight: 650; color: var(--text-primary); }
+  .meal .items { color: var(--text-secondary); }
+  .meal .adj { color: var(--good-text); font-weight: 600; }
+  .macros { display:flex; gap: 16px; margin-top: 10px; font-size: .85rem; color: var(--text-secondary); flex-wrap: wrap; }
+  .macros b { color: var(--text-primary); }
+  .alert { border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; font-size: .88rem; display:flex; gap:10px; align-items: center; flex-wrap: wrap; }
+  .alert .ico { font-size: 1.1rem; }
+  .alert.ok      { background: rgba(12,163,12,.10); }
+  .alert.warn    { background: rgba(250,178,25,.13); }
+  .alert.serious { background: rgba(236,131,90,.14); }
+  .alert.info    { background: var(--accent-wash); }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .legend { display:flex; gap:18px; font-size:.78rem; color: var(--text-secondary); margin-bottom: 6px; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .dotk { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .linek { width:16px; height:2px; display:inline-block; }
+  table { width:100%; border-collapse: collapse; font-size: .84rem; }
+  th { text-align:left; color: var(--text-muted); font-weight: 550; padding: 6px 8px; border-bottom: 1px solid var(--baseline); font-variant-numeric: tabular-nums; }
+  td { padding: 6px 8px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+  td.del { text-align:right; }
+  td.del button { background:transparent; color: var(--critical); border:none; font-size:.8rem; padding:2px 6px; }
+  details summary { cursor: pointer; font-size: .9rem; font-weight: 600; }
+  .charts { display:grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+  @media (max-width: 760px) { .charts { grid-template-columns: 1fr; } }
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 10;
+    background: var(--surface-1); border: 1px solid var(--baseline);
+    border-radius: 8px; padding: 6px 10px; font-size: .78rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,.15); display: none;
+  }
+  .footnote { font-size: .75rem; color: var(--text-muted); margin-top: 8px; }
+  .sync { font-size: .78rem; color: var(--text-muted); margin-bottom: 14px; min-height: 1.2em; }
+  .sync.err { color: var(--critical); }
+</style>
+</head>
+<body>
+
+<h1>Seguimiento de dieta</h1>
+<div class="sub">Varón 38 · 188 cm · Hipertrofia 5 d/sem · Objetivo: definición → 10-11 % → mantenimiento → ganancia</div>
+<div class="sync" id="syncStatus"></div>
+
+<div class="tiles">
+  <div class="tile"><div class="lbl">Peso (media 7 días)</div><div class="val" id="tPeso">—</div><div class="det" id="tPesoDet"></div></div>
+  <div class="tile"><div class="lbl">Tendencia semanal</div><div class="val" id="tTrend">—</div><div class="det" id="tTrendDet"></div></div>
+  <div class="tile"><div class="lbl">% graso (Navy)</div><div class="val" id="tBF">—</div><div class="det" id="tBFDet"></div></div>
+  <div class="tile"><div class="lbl">Ajuste vigente</div><div class="val" id="tAdj">—</div><div class="det" id="tAdjDet"></div></div>
+</div>
+
+<div class="card" id="alertsCard" style="display:none">
+  <h2>Recomendaciones</h2>
+  <div id="alerts"></div>
+</div>
+
+<div class="card">
+  <h2>Registro de hoy</h2>
+  <div class="row">
+    <div><label>Fecha</label><input type="date" id="inDate"></div>
+    <div><label>Peso (kg)</label><input type="number" id="inKg" step="0.1" min="60" max="120" placeholder="90.4"></div>
+    <button onclick="addWeight()">Guardar peso</button>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <div><label>Cintura (cm) — semanal</label><input type="number" id="inWaist" step="0.1" min="60" max="130" placeholder="88.0"></div>
+    <div><label>Cuello (cm) — semanal</label><input type="number" id="inNeck" step="0.1" min="25" max="55" placeholder="40.0"></div>
+    <button class="ghost" onclick="addMeasure()">Guardar medidas</button>
+  </div>
+  <div class="footnote">Peso: a diario, en ayunas, tras ir al baño. Medidas: 1 vez/semana, misma cinta, sin apretar, a la altura del ombligo (cintura) y bajo la nuez (cuello).</div>
+</div>
+
+<div class="charts">
+  <div class="card">
+    <h2>Peso</h2>
+    <div class="legend">
+      <span><span class="dotk" style="background:var(--series-1-light)"></span>Diario</span>
+      <span><span class="linek" style="background:var(--series-1)"></span>Media 7 días</span>
+    </div>
+    <div id="chartPeso"></div>
+  </div>
+  <div class="card">
+    <h2>Cintura</h2>
+    <div class="legend"><span><span class="linek" style="background:var(--series-2)"></span>Semanal (cm)</span></div>
+    <div id="chartCintura"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Dieta del día</h2>
+  <div class="phase-tabs" id="phaseTabs"></div>
+  <div id="meals"></div>
+  <div class="macros" id="macros"></div>
+  <div class="footnote">Pesos en crudo/seco. Ensalada de la cena: lechuga + cebolla + tomate. Sin aceite extra de cocinado (antiadherente o espray). Los ajustes automáticos modifican solo el arroz.</div>
+</div>
+
+<div class="card">
+  <details>
+    <summary>Historial (tabla)</summary>
+    <div style="overflow-x:auto; margin-top:10px">
+      <table id="histTable"></table>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="ghost small" onclick="exportData()">Exportar copia (JSON)</button>
+      <button class="ghost small" onclick="importData()">Importar copia</button>
+    </div>
+  </details>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+'use strict';
+const HEIGHT_CM = 188;
+const LEAN_KG = 77.4;            // masa magra estimada al inicio (91 kg @ 15 %)
+const TARGET_LOW_KG = 87;        // zona objetivo aproximada para 10-11 %
+const KCAL_PER_G_RICE = 3.55;
+
+const PHASES = {
+  definicion: {
+    label: 'Definición',
+    kcal: 2580, prot: 205, carb: 298, fat: 60,
+    trendTarget: [-0.5, -0.4],
+    meals: [
+      { time: '8:30 Desayuno',       items: [['Avena', 60, 'g'], ['Whey', 30, 'g (1 cazo)'], ['Plátano', 1, 'ud'], ['Nueces', 20, 'g']] },
+      { time: '12:15 Pre-entreno',   items: [['Arroz', 65, 'g', 'rice'], ['Pechuga de pollo', 150, 'g'], ['Nectarina', 1, 'ud']] },
+      { time: '15:30 Post-entreno',  items: [['Arroz', 65, 'g', 'rice'], ['Babilla de ternera', 200, 'g']] },
+      { time: '19:00 Merienda',      items: [['Quinoa', 60, 'g'], ['Huevo entero', 1, 'ud'], ['Claras', 3, 'ud']] },
+      { time: '21:30 Cena',          items: [['Patata', 400, 'g'], ['Bonito', 200, 'g'], ['Ensalada', 1, 'ración'], ['AOVE (en ensalada)', 10, 'g']] },
+    ],
+  },
+  mantenimiento: {
+    label: 'Mantenimiento',
+    kcal: 3070, prot: 203, carb: 357, fat: 88,
+    trendTarget: [-0.15, 0.15],
+    meals: [
+      { time: '8:30 Desayuno',       items: [['Avena', 90, 'g'], ['Whey', 30, 'g (1 cazo)'], ['Plátano', 1, 'ud'], ['Nueces', 30, 'g']] },
+      { time: '12:15 Pre-entreno',   items: [['Arroz', 90, 'g', 'rice'], ['Pechuga de pollo', 150, 'g'], ['Nectarina', 1, 'ud']] },
+      { time: '15:30 Post-entreno',  items: [['Arroz', 90, 'g', 'rice'], ['Babilla de ternera', 200, 'g'], ['Aceite de oliva', 10, 'g']] },
+      { time: '19:00 Merienda',      items: [['Quinoa', 60, 'g'], ['Huevo entero', 1, 'ud']] },
+      { time: '21:30 Cena',          items: [['Patata', 400, 'g'], ['Bonito', 200, 'g'], ['Aceite de oliva', 10, 'g'], ['Ensalada', 1, 'ración'], ['AOVE (en ensalada)', 10, 'g']] },
+    ],
+  },
+  ganancia: {
+    label: 'Ganancia',
+    kcal: 3325, prot: 207, carb: 407, fat: 95,
+    trendTarget: [0.1, 0.3],
+    meals: [
+      { time: '8:30 Desayuno',       items: [['Avena', 100, 'g'], ['Whey', 30, 'g (1 cazo)'], ['Plátano', 1, 'ud'], ['Nueces', 30, 'g']] },
+      { time: '12:15 Pre-entreno',   items: [['Arroz', 100, 'g', 'rice'], ['Pechuga de pollo', 150, 'g'], ['Nectarina', 1, 'ud']] },
+      { time: '15:30 Post-entreno',  items: [['Arroz', 100, 'g', 'rice'], ['Babilla de ternera', 200, 'g'], ['Aceite de oliva', 12, 'g']] },
+      { time: '19:00 Merienda',      items: [['Quinoa', 60, 'g'], ['Huevo entero', 1, 'ud'], ['Plátano', 1, 'ud']] },
+      { time: '21:30 Cena',          items: [['Patata', 400, 'g'], ['Bonito', 200, 'g'], ['Aceite de oliva', 13, 'g'], ['Ensalada', 1, 'ración'], ['AOVE (en ensalada)', 10, 'g']] },
+    ],
+  },
+};
+
+// ---------- sincronización con jsonbin.io ----------
+const JSONBIN_BIN_ID = '6a7b3aa8f5f4af5e2907b0f0';
+const JSONBIN_KEY = '$2a$10$byEkgCiPtr6uA9j.sw5Uiuld00jGPRMT1Rn9TlhHYbPe3CFfaEu6G';
+const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID;
+
+function setSync(msg, isErr) {
+  const el = document.getElementById('syncStatus');
+  if (el) { el.textContent = msg; el.className = 'sync' + (isErr ? ' err' : ''); }
+}
+
+async function loadRemote() {
+  setSync('☁️ Cargando datos de la nube…');
+  try {
+    const res = await fetch(JSONBIN_URL + '/latest', { headers: { 'X-Master-Key': JSONBIN_KEY } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const rec = data.record;
+    if (rec && Array.isArray(rec.weights)) {
+      S = rec;
+      localStorage.setItem(KEY, JSON.stringify(S));
+      render();
+      setSync('☁️ Sincronizado con la nube');
+    } else {
+      // el bin aún no tiene datos con el formato esperado: subimos el estado local
+      await pushRemote();
+    }
+  } catch (e) {
+    setSync('⚠️ Sin conexión con la nube — usando datos locales', true);
+  }
+}
+
+async function pushRemote() {
+  setSync('☁️ Guardando en la nube…');
+  try {
+    const res = await fetch(JSONBIN_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+      body: JSON.stringify(S),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    setSync('☁️ Guardado en la nube · ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }));
+  } catch (e) {
+    setSync('⚠️ No se pudo guardar en la nube (la copia local sí se guardó)', true);
+  }
+}
+
+// ---------- estado ----------
+const KEY = 'dieta-seguimiento-v1';
+let S = load();
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return {
+    phase: 'definicion',
+    phaseStart: today(),
+    lastBreak: null,
+    riceAdj: { definicion: 0, mantenimiento: 0, ganancia: 0 },
+    weights: [],   // {d:'YYYY-MM-DD', kg}
+    measures: [],  // {d, waist, neck}
+  };
+}
+let pushTimer = null;
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(S));
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(pushRemote, 600); // agrupa cambios rápidos en un solo PUT
+}
+function today() { return new Date().toISOString().slice(0, 10); }
+function fmtDate(d) { const [y,m,dd] = d.split('-'); return dd + '/' + m; }
+function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+
+// ---------- registro ----------
+function addWeight() {
+  const d = document.getElementById('inDate').value;
+  const kg = parseFloat(document.getElementById('inKg').value);
+  if (!d || !kg) { alert('Falta fecha o peso'); return; }
+  S.weights = S.weights.filter(w => w.d !== d);
+  S.weights.push({ d, kg });
+  S.weights.sort((a, b) => a.d.localeCompare(b.d));
+  document.getElementById('inKg').value = '';
+  save(); render();
+}
+function addMeasure() {
+  const d = document.getElementById('inDate').value || today();
+  const waist = parseFloat(document.getElementById('inWaist').value);
+  const neck = parseFloat(document.getElementById('inNeck').value);
+  if (!waist || !neck) { alert('Faltan cintura o cuello'); return; }
+  S.measures = S.measures.filter(m => m.d !== d);
+  S.measures.push({ d, waist, neck });
+  S.measures.sort((a, b) => a.d.localeCompare(b.d));
+  document.getElementById('inWaist').value = '';
+  document.getElementById('inNeck').value = '';
+  save(); render();
+}
+function delWeight(d)  { S.weights  = S.weights.filter(w => w.d !== d);  save(); render(); }
+function delMeasure(d) { S.measures = S.measures.filter(m => m.d !== d); save(); render(); }
+
+// ---------- cálculos ----------
+function rollingAvg(entries, endIdx, windowDays) {
+  // media de los pesos en los `windowDays` días naturales que terminan en entries[endIdx].d
+  const end = new Date(entries[endIdx].d);
+  const start = new Date(end); start.setDate(start.getDate() - (windowDays - 1));
+  const vals = entries.filter(e => { const t = new Date(e.d); return t >= start && t <= end; }).map(e => e.kg);
+  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+}
+function currentAvg7() {
+  const w = S.weights;
+  return w.length ? rollingAvg(w, w.length - 1, 7) : null;
+}
+function weeklyTrend() {
+  // media últimos 7 días vs media de los 7 anteriores (necesita ≥10 días de historia)
+  const w = S.weights;
+  if (w.length < 6) return null;
+  const last = new Date(w[w.length - 1].d);
+  const span = daysBetween(w[0].d, w[w.length - 1].d);
+  if (span < 10) return null;
+  const inRange = (e, from, to) => { const t = new Date(e.d); return t >= from && t <= to; };
+  const d = n => { const x = new Date(last); x.setDate(x.getDate() - n); return x; };
+  const cur = w.filter(e => inRange(e, d(6), last)).map(e => e.kg);
+  const prev = w.filter(e => inRange(e, d(13), d(7))).map(e => e.kg);
+  if (!cur.length || !prev.length) return null;
+  return cur.reduce((a,b)=>a+b,0)/cur.length - prev.reduce((a,b)=>a+b,0)/prev.length;
+}
+function navyBF() {
+  if (!S.measures.length) return null;
+  const m = S.measures[S.measures.length - 1];
+  const bf = 495 / (1.0324 - 0.19077 * Math.log10(m.waist - m.neck) + 0.15456 * Math.log10(HEIGHT_CM)) - 450;
+  return { bf, d: m.d };
+}
+function waistDelta14() {
+  const ms = S.measures;
+  if (ms.length < 2) return null;
+  const last = ms[ms.length - 1];
+  const ref = [...ms].reverse().find(m => daysBetween(m.d, last.d) >= 10);
+  return ref ? last.waist - ref.waist : null;
+}
+
+// ---------- recomendaciones ----------
+function applyRice(delta) {
+  S.riceAdj[S.phase] += delta;
+  save(); render();
+}
+function switchPhase(p, viaButton) {
+  if (viaButton && !confirm('Cambiar a fase ' + PHASES[p].label + ' desde hoy?')) return;
+  S.phase = p; S.phaseStart = today();
+  save(); render();
+}
+function markBreak() { S.lastBreak = today(); save(); render(); }
+
+function buildAlerts() {
+  const out = [];
+  const trend = weeklyTrend();
+  const avg7 = currentAvg7();
+  const bf = navyBF();
+  const wd = waistDelta14();
+  const ph = S.phase;
+  const [lo, hi] = PHASES[ph].trendTarget;
+
+  if (trend === null) {
+    out.push({ cls: 'info', ico: 'ℹ️', msg: 'Aún pocos datos para calcular tendencia (necesito ~2 semanas de pesos). Registra a diario.' });
+  } else if (ph === 'definicion') {
+    if (trend > -0.15) {
+      if (wd !== null && wd <= -0.5) {
+        out.push({ cls: 'ok', ico: '✅', msg: 'Peso estancado pero la cintura baja (' + wd.toFixed(1) + ' cm): recomposición, todo bien. No toques nada.' });
+      } else {
+        out.push({ cls: 'warn', ico: '⚠️', msg: 'Estancado ' + (trend >= 0 ? '(+' : '(') + trend.toFixed(2) + ' kg/sem). Opciones: quitar 20 g de arroz o sumar 2.000 pasos/día.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
+      }
+    } else if (trend < -0.8) {
+      out.push({ cls: 'serious', ico: '📉', msg: 'Bajas demasiado rápido (' + trend.toFixed(2) + ' kg/sem) — riesgo de perder músculo.', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
+    } else {
+      out.push({ cls: 'ok', ico: '✅', msg: 'Ritmo correcto: ' + trend.toFixed(2) + ' kg/sem (objetivo ' + lo + ' a ' + hi + ').' });
+    }
+  } else if (ph === 'ganancia') {
+    if (trend < 0.05) {
+      out.push({ cls: 'warn', ico: '⚠️', msg: 'No subes (' + trend.toFixed(2) + ' kg/sem). Si llevas así ≥3 semanas:', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
+    } else if (trend > 0.35) {
+      out.push({ cls: 'serious', ico: '📈', msg: 'Subes demasiado rápido (' + trend.toFixed(2) + ' kg/sem) — exceso será grasa.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
+    } else {
+      out.push({ cls: 'ok', ico: '✅', msg: 'Ritmo correcto: +' + trend.toFixed(2) + ' kg/sem.' });
+    }
+  } else {
+    if (Math.abs(trend) > 0.3) {
+      const dir = trend > 0 ? -20 : 20;
+      out.push({ cls: 'warn', ico: '⚠️', msg: 'Peso derivando (' + (trend>0?'+':'') + trend.toFixed(2) + ' kg/sem) en mantenimiento.', btn: ['Aplicar ' + (dir>0?'+':'') + dir + ' g arroz', () => applyRice(dir)] });
+    } else {
+      out.push({ cls: 'ok', ico: '✅', msg: 'Peso estable. Mantenimiento correcto.' });
+    }
+  }
+
+  // zona objetivo y cambio de fase
+  if (ph === 'definicion' && avg7 !== null && avg7 < TARGET_LOW_KG) {
+    if (bf && bf.bf <= 11.5) {
+      out.push({ cls: 'ok', ico: '🎯', msg: 'Media ' + avg7.toFixed(1) + ' kg y ~' + bf.bf.toFixed(1) + ' % graso (Navy): objetivo alcanzado. Confirma con el espejo (abdominales visibles en reposo).', btn: ['Pasar a Mantenimiento', () => switchPhase('mantenimiento', true)] });
+    } else {
+      out.push({ cls: 'info', ico: '🎯', msg: 'Media bajo ' + TARGET_LOW_KG + ' kg — zona objetivo. Mide cintura y cuello esta semana para estimar % graso.' });
+    }
+  }
+  if (ph === 'mantenimiento' && daysBetween(S.phaseStart, today()) >= 14) {
+    out.push({ cls: 'info', ico: '➡️', msg: 'Llevas ' + daysBetween(S.phaseStart, today()) + ' días en mantenimiento. Si el peso está estable 2-3 semanas, puedes pasar a Ganancia.', btn: ['Pasar a Ganancia', () => switchPhase('ganancia', true)] });
+  }
+
+  // descanso metabólico en definición
+  if (ph === 'definicion') {
+    const since = S.lastBreak || S.phaseStart;
+    const days = daysBetween(since, today());
+    if (days >= 42) {
+      out.push({ cls: 'info', ico: '🧘', msg: days + ' días de déficit seguidos. Haz 1 semana a mantenimiento (~3.070 kcal): descanso metabólico y mental. Usa la pestaña Mantenimiento esa semana.', btn: ['Marcar descanso hecho', markBreak] });
+    }
+  }
+  return out;
+}
+
+// ---------- gráficas SVG ----------
+function drawLineChart(el, series, opts) {
+  // series: [{pts:[{x:date,y}], color, width, dots, dotFill}]
+  const W = el.clientWidth || 480, H = opts.height || 240;
+  const P = { t: 12, r: 12, b: 26, l: 40 };
+  const all = series.flatMap(s => s.pts);
+  if (all.length < 2) { el.innerHTML = '<div style="color:var(--text-muted);font-size:.85rem;padding:24px 0">Aún no hay datos suficientes.</div>'; return; }
+  const xs = all.map(p => +new Date(p.x));
+  const ys = all.map(p => p.y);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  let y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const pad = Math.max((y1 - y0) * 0.15, 0.5); y0 -= pad; y1 += pad;
+  const sx = v => P.l + (v - x0) / Math.max(x1 - x0, 1) * (W - P.l - P.r);
+  const sy = v => P.t + (1 - (v - y0) / (y1 - y0)) * (H - P.t - P.b);
+
+  let svg = '<svg width="' + W + '" height="' + H + '" role="img">';
+  // grid + eje y
+  const steps = 4;
+  for (let i = 0; i <= steps; i++) {
+    const yv = y0 + (y1 - y0) * i / steps;
+    const yy = sy(yv);
+    svg += '<line x1="' + P.l + '" y1="' + yy + '" x2="' + (W - P.r) + '" y2="' + yy + '" stroke="var(--grid)" stroke-width="1"/>';
+    svg += '<text x="' + (P.l - 6) + '" y="' + (yy + 3) + '" text-anchor="end" font-size="10" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">' + yv.toFixed(1) + '</text>';
+  }
+  // etiquetas x (máx 6)
+  const uniq = [...new Set(all.map(p => p.x))].sort();
+  const stepX = Math.max(1, Math.ceil(uniq.length / 6));
+  uniq.forEach((d, i) => {
+    if (i % stepX !== 0 && i !== uniq.length - 1) return;
+    svg += '<text x="' + sx(+new Date(d)) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="var(--text-muted)">' + fmtDate(d) + '</text>';
+  });
+  svg += '<line x1="' + P.l + '" y1="' + sy(y0) + '" x2="' + (W - P.r) + '" y2="' + sy(y0) + '" stroke="var(--baseline)" stroke-width="1"/>';
+  // series
+  for (const s of series) {
+    const pts = [...s.pts].sort((a, b) => a.x.localeCompare(b.x));
+    if (s.line !== false && pts.length > 1) {
+      const dPath = pts.map((p, i) => (i ? 'L' : 'M') + sx(+new Date(p.x)).toFixed(1) + ' ' + sy(p.y).toFixed(1)).join(' ');
+      svg += '<path d="' + dPath + '" fill="none" stroke="' + s.color + '" stroke-width="' + (s.width || 2) + '" stroke-linejoin="round" stroke-linecap="round"/>';
+    }
+    if (s.dots) {
+      for (const p of pts) {
+        svg += '<circle cx="' + sx(+new Date(p.x)).toFixed(1) + '" cy="' + sy(p.y).toFixed(1) + '" r="3.5" fill="' + s.color + '" stroke="var(--surface-1)" stroke-width="2" data-d="' + p.x + '" data-v="' + p.y.toFixed(1) + '" data-u="' + (opts.unit || '') + '"/>';
+      }
+    }
+  }
+  svg += '</svg>';
+  el.innerHTML = svg;
+  // tooltip por punto
+  const tip = document.getElementById('tooltip');
+  el.querySelectorAll('circle').forEach(c => {
+    c.addEventListener('mouseenter', e => {
+      tip.textContent = fmtDate(c.dataset.d) + ' · ' + c.dataset.v + ' ' + c.dataset.u;
+      tip.style.display = 'block';
+    });
+    c.addEventListener('mousemove', e => { tip.style.left = (e.clientX + 12) + 'px'; tip.style.top = (e.clientY - 10) + 'px'; });
+    c.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  });
+}
+
+// ---------- render ----------
+function render() {
+  document.getElementById('inDate').value = document.getElementById('inDate').value || today();
+
+  // tiles
+  const avg7 = currentAvg7();
+  const trend = weeklyTrend();
+  const bf = navyBF();
+  const last = S.weights[S.weights.length - 1];
+  document.getElementById('tPeso').textContent = avg7 ? avg7.toFixed(1) + ' kg' : '—';
+  document.getElementById('tPesoDet').textContent = last ? 'Último: ' + last.kg.toFixed(1) + ' kg (' + fmtDate(last.d) + ')' : 'Sin registros';
+  document.getElementById('tTrend').textContent = trend !== null ? (trend > 0 ? '+' : '') + trend.toFixed(2) + ' kg' : '—';
+  const [lo, hi] = PHASES[S.phase].trendTarget;
+  document.getElementById('tTrendDet').textContent = 'Objetivo fase: ' + lo + ' a ' + hi + ' kg/sem';
+  document.getElementById('tBF').textContent = bf ? bf.bf.toFixed(1) + ' %' : '—';
+  document.getElementById('tBFDet').textContent = bf ? 'Medido ' + fmtDate(bf.d) + ' · ±3 % de error' : 'Mide cintura y cuello';
+  const adj = S.riceAdj[S.phase];
+  document.getElementById('tAdj').textContent = (adj > 0 ? '+' : '') + adj + ' g';
+  document.getElementById('tAdjDet').textContent = 'Arroz vs plan base · ' + PHASES[S.phase].label;
+
+  // alerts
+  const alerts = buildAlerts();
+  const ac = document.getElementById('alertsCard');
+  const av = document.getElementById('alerts');
+  av.innerHTML = '';
+  ac.style.display = alerts.length ? 'block' : 'none';
+  alerts.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'alert ' + a.cls;
+    div.innerHTML = '<span class="ico">' + a.ico + '</span><span style="flex:1">' + a.msg + '</span>';
+    if (a.btn) {
+      const b = document.createElement('button');
+      b.className = 'small'; b.textContent = a.btn[0]; b.onclick = a.btn[1];
+      div.appendChild(b);
+    }
+    av.appendChild(div);
+  });
+
+  // tabs de fase
+  const tabs = document.getElementById('phaseTabs');
+  tabs.innerHTML = '';
+  for (const key of Object.keys(PHASES)) {
+    const b = document.createElement('button');
+    b.className = 'phase-tab' + (S.phase === key ? ' active' : '');
+    b.textContent = PHASES[key].label;
+    b.onclick = () => { if (key !== S.phase) switchPhase(key, true); };
+    tabs.appendChild(b);
+  }
+
+  // comidas con ajuste aplicado (mitad del ajuste a cada comida de arroz)
+  const ph = PHASES[S.phase];
+  const half = S.riceAdj[S.phase] / 2;
+  const mealsEl = document.getElementById('meals');
+  mealsEl.innerHTML = ph.meals.map(m => {
+    const items = m.items.map(it => {
+      const [name, qty, unit, tag] = it;
+      if (tag === 'rice') {
+        const q = Math.round(qty + half);
+        const mark = half !== 0 ? ' <span class="adj">(' + (half > 0 ? '+' : '') + Math.round(half) + ')</span>' : '';
+        return name + ' <b>' + q + ' g</b>' + mark;
+      }
+      return name + ' <b>' + qty + ' ' + unit + '</b>';
+    }).join(' · ');
+    return '<div class="meal"><span class="time">' + m.time + '</span><br><span class="items">' + items + '</span></div>';
+  }).join('');
+
+  const kcal = Math.round(ph.kcal + S.riceAdj[S.phase] * KCAL_PER_G_RICE);
+  const carb = Math.round(ph.carb + S.riceAdj[S.phase] * 0.78);
+  document.getElementById('macros').innerHTML =
+    '<span>🔥 <b>' + kcal + '</b> kcal</span><span>🥩 Proteína <b>' + ph.prot + ' g</b></span>' +
+    '<span>🍚 Carbos <b>' + carb + ' g</b></span><span>🫒 Grasa <b>' + ph.fat + ' g</b></span>';
+
+  // gráficas
+  const wpts = S.weights.map(w => ({ x: w.d, y: w.kg }));
+  const apts = S.weights.map((w, i) => ({ x: w.d, y: rollingAvg(S.weights, i, 7) })).filter(p => p.y !== null);
+  drawLineChart(document.getElementById('chartPeso'), [
+    { pts: wpts, color: 'var(--series-1-light)', dots: true, line: false },
+    { pts: apts, color: 'var(--series-1)', width: 2 },
+  ], { unit: 'kg', height: 240 });
+  const cpts = S.measures.map(m => ({ x: m.d, y: m.waist }));
+  drawLineChart(document.getElementById('chartCintura'), [
+    { pts: cpts, color: 'var(--series-2)', width: 2, dots: true },
+  ], { unit: 'cm', height: 240 });
+
+  // tabla historial
+  const t = document.getElementById('histTable');
+  const rows = [];
+  rows.push('<tr><th>Fecha</th><th>Peso</th><th>Cintura</th><th>Cuello</th><th>% Navy</th><th></th></tr>');
+  const byDate = {};
+  S.weights.forEach(w => { byDate[w.d] = byDate[w.d] || {}; byDate[w.d].kg = w.kg; });
+  S.measures.forEach(m => { byDate[m.d] = byDate[m.d] || {}; byDate[m.d].waist = m.waist; byDate[m.d].neck = m.neck; });
+  Object.keys(byDate).sort().reverse().forEach(d => {
+    const r = byDate[d];
+    let bfv = '';
+    if (r.waist && r.neck) {
+      bfv = (495 / (1.0324 - 0.19077 * Math.log10(r.waist - r.neck) + 0.15456 * Math.log10(HEIGHT_CM)) - 450).toFixed(1) + ' %';
+    }
+    rows.push('<tr><td>' + d + '</td><td>' + (r.kg ? r.kg.toFixed(1) + ' kg' : '') + '</td><td>' + (r.waist ? r.waist + ' cm' : '') + '</td><td>' + (r.neck ? r.neck + ' cm' : '') + '</td><td>' + bfv + '</td>' +
+      '<td class="del">' + (r.kg !== undefined ? '<button onclick="delWeight(\'' + d + '\')">peso ✕</button>' : '') + (r.waist !== undefined ? '<button onclick="delMeasure(\'' + d + '\')">medidas ✕</button>' : '') + '</td></tr>');
+  });
+  t.innerHTML = rows.join('');
+}
+
+// ---------- backup ----------
+function exportData() {
+  const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'seguimiento-dieta-' + today() + '.json';
+  a.click();
+}
+function importData() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = () => {
+    const f = inp.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try { S = JSON.parse(r.result); save(); render(); alert('Datos importados.'); }
+      catch (e) { alert('Archivo no válido.'); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+window.addEventListener('resize', render);
+render();
+loadRemote();
+</script>
+</body>
+</html>
