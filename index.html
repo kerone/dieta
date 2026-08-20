@@ -428,25 +428,35 @@ function buildAlerts() {
       } else {
         out.push({ cls: 'warn', ico: '⚠️', msg: 'Estancado ' + (trend >= 0 ? '(+' : '(') + trend.toFixed(2) + ' kg/sem). Opciones: quitar 20 g de arroz o sumar 2.000 pasos/día.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
       }
-    } else if (trend < -0.8) {
-      out.push({ cls: 'serious', ico: '📉', msg: 'Bajas demasiado rápido (' + trend.toFixed(2) + ' kg/sem) — riesgo de perder músculo.', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
-    } else {
+    } else if (trend > hi) {
+      out.push({ cls: 'warn', ico: '🐢', msg: 'Bajas algo lento: ' + trend.toFixed(2) + ' kg/sem (objetivo ' + lo + ' a ' + hi + '). Si sigue así 2 semanas, quita 20 g de arroz o suma 2.000 pasos/día.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
+    } else if (trend >= lo) {
       out.push({ cls: 'ok', ico: '✅', msg: 'Ritmo correcto: ' + trend.toFixed(2) + ' kg/sem (objetivo ' + lo + ' a ' + hi + ').' });
+    } else if (trend >= -0.8) {
+      out.push({ cls: 'warn', ico: '⚡', msg: 'Bajas algo rápido: ' + trend.toFixed(2) + ' kg/sem (objetivo ' + lo + ' a ' + hi + '). Si no es agua de un cambio reciente de sal o carbos, suma 20 g de arroz.', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
+    } else {
+      out.push({ cls: 'serious', ico: '📉', msg: 'Bajas demasiado rápido (' + trend.toFixed(2) + ' kg/sem) — riesgo de perder músculo.', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
     }
   } else if (ph === 'ganancia') {
     if (trend < 0.05) {
       out.push({ cls: 'warn', ico: '⚠️', msg: 'No subes (' + trend.toFixed(2) + ' kg/sem). Si llevas así ≥3 semanas:', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
-    } else if (trend > 0.35) {
-      out.push({ cls: 'serious', ico: '📈', msg: 'Subes demasiado rápido (' + trend.toFixed(2) + ' kg/sem) — exceso será grasa.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
+    } else if (trend < lo) {
+      out.push({ cls: 'warn', ico: '🐢', msg: 'Subes algo lento: +' + trend.toFixed(2) + ' kg/sem (objetivo +' + lo + ' a +' + hi + ').', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
+    } else if (trend <= hi) {
+      out.push({ cls: 'ok', ico: '✅', msg: 'Ritmo correcto: +' + trend.toFixed(2) + ' kg/sem (objetivo +' + lo + ' a +' + hi + ').' });
+    } else if (trend <= 0.5) {
+      out.push({ cls: 'warn', ico: '⚡', msg: 'Subes algo rápido: +' + trend.toFixed(2) + ' kg/sem (objetivo +' + lo + ' a +' + hi + '). Parte del exceso será grasa.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
     } else {
-      out.push({ cls: 'ok', ico: '✅', msg: 'Ritmo correcto: +' + trend.toFixed(2) + ' kg/sem.' });
+      out.push({ cls: 'serious', ico: '📈', msg: 'Subes demasiado rápido (+' + trend.toFixed(2) + ' kg/sem) — el exceso será grasa.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
     }
   } else {
-    if (Math.abs(trend) > 0.3) {
+    if (trend >= lo && trend <= hi) {
+      out.push({ cls: 'ok', ico: '✅', msg: 'Peso estable (' + (trend>0?'+':'') + trend.toFixed(2) + ' kg/sem). Mantenimiento correcto.' });
+    } else if (Math.abs(trend) <= 0.3) {
+      out.push({ cls: 'info', ico: 'ℹ️', msg: 'Ligera deriva (' + (trend>0?'+':'') + trend.toFixed(2) + ' kg/sem, objetivo ' + lo + ' a +' + hi + '). Vigila otra semana antes de tocar nada.' });
+    } else {
       const dir = trend > 0 ? -20 : 20;
       out.push({ cls: 'warn', ico: '⚠️', msg: 'Peso derivando (' + (trend>0?'+':'') + trend.toFixed(2) + ' kg/sem) en mantenimiento.', btn: ['Aplicar ' + (dir>0?'+':'') + dir + ' g arroz', () => applyRice(dir)] });
-    } else {
-      out.push({ cls: 'ok', ico: '✅', msg: 'Peso estable. Mantenimiento correcto.' });
     }
   }
 
