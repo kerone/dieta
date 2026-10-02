@@ -195,7 +195,7 @@
   <div class="phase-tabs" id="phaseTabs"></div>
   <div id="meals"></div>
   <div class="macros" id="macros"></div>
-  <div class="footnote">Pesos en crudo/seco. Ensalada de la cena: lechuga + cebolla + tomate. Sin aceite extra de cocinado (antiadherente o espray). Los ajustes automáticos modifican solo la pasta.</div>
+  <div class="footnote">Pesos en crudo/seco. Ensalada de la cena: lechuga + cebolla + tomate. Cena: alterna patata o pasta, mismos macros. Los ajustes automáticos modifican solo el arroz.</div>
 </div>
 
 <div class="card">
@@ -223,14 +223,14 @@ const KCAL_PER_G_RICE = 3.55;
 const PHASES = {
   definicion: {
     label: 'Definición',
-    kcal: 2580, prot: 205, carb: 298, fat: 60,
+    kcal: 2690, prot: 192, carb: 326, fat: 68,
     trendTarget: [-0.5, -0.4],
     meals: [
       { time: '8:30 Desayuno',       items: [['Avena', 60, 'g'], ['Whey', 30, 'g (1 cazo)'], ['Plátano', 1, 'ud'], ['Nueces', 20, 'g']] },
-      { time: '12:15 Pre-entreno',   items: [['Pasta', 65, 'g', 'rice'], ['Pechuga de pollo', 150, 'g'], ['Nectarina', 1, 'ud']] },
-      { time: '15:30 Post-entreno',  items: [['Pasta', 65, 'g', 'rice'], ['Babilla de ternera', 200, 'g']] },
-      { time: '19:00 Merienda',      items: [['Quinoa', 60, 'g'], ['Huevo entero', 1, 'ud'], ['Claras', 3, 'ud']] },
-      { time: '21:30 Cena',          items: [['Patata', 400, 'g'], ['Bonito', 200, 'g'], ['Ensalada', 1, 'ración'], ['AOVE (en ensalada)', 10, 'g']] },
+      { time: '12:15 Pre-entreno',   items: [['Arroz', 75, 'g', 'rice'], ['Pechuga de pollo', 120, 'g'], ['Nectarina', 1, 'ud']] },
+      { time: '15:30 Post-entreno',  items: [['Arroz', 75, 'g', 'rice'], ['Babilla de ternera', 200, 'g'], ['Aceite (cocinado con cebolla y pimiento)', 4, 'g']] },
+      { time: '19:00 Merienda',      items: [['Quinoa', 60, 'g'], ['Huevo entero', 1, 'ud'], ['Claras', 1, 'ud']] },
+      { time: '21:30 Cena',          items: [['Patata', 400, 'g (o pasta 90 g en seco)'], ['Bonito', 200, 'g'], ['Ensalada', 1, 'ración'], ['AOVE (en ensalada)', 10, 'g']] },
     ],
   },
   mantenimiento: {
@@ -239,10 +239,10 @@ const PHASES = {
     trendTarget: [-0.15, 0.15],
     meals: [
       { time: '8:30 Desayuno',       items: [['Avena', 90, 'g'], ['Whey', 30, 'g (1 cazo)'], ['Plátano', 1, 'ud'], ['Nueces', 30, 'g']] },
-      { time: '12:15 Pre-entreno',   items: [['Pasta', 90, 'g', 'rice'], ['Pechuga de pollo', 150, 'g'], ['Nectarina', 1, 'ud']] },
-      { time: '15:30 Post-entreno',  items: [['Pasta', 90, 'g', 'rice'], ['Babilla de ternera', 200, 'g'], ['Aceite de oliva', 10, 'g']] },
+      { time: '12:15 Pre-entreno',   items: [['Arroz', 90, 'g', 'rice'], ['Pechuga de pollo', 150, 'g'], ['Nectarina', 1, 'ud']] },
+      { time: '15:30 Post-entreno',  items: [['Arroz', 90, 'g', 'rice'], ['Babilla de ternera', 200, 'g'], ['Aceite de oliva', 10, 'g']] },
       { time: '19:00 Merienda',      items: [['Quinoa', 60, 'g'], ['Huevo entero', 1, 'ud']] },
-      { time: '21:30 Cena',          items: [['Patata', 400, 'g'], ['Bonito', 200, 'g'], ['Aceite de oliva', 10, 'g'], ['Ensalada', 1, 'ración'], ['AOVE (en ensalada)', 10, 'g']] },
+      { time: '21:30 Cena',          items: [['Patata', 400, 'g (o pasta 90 g en seco)'], ['Bonito', 200, 'g'], ['Aceite de oliva', 10, 'g'], ['Ensalada', 1, 'ración'], ['AOVE (en ensalada)', 10, 'g']] },
     ],
   },
   ganancia: {
@@ -251,10 +251,10 @@ const PHASES = {
     trendTarget: [0.1, 0.3],
     meals: [
       { time: '8:30 Desayuno',       items: [['Avena', 100, 'g'], ['Whey', 30, 'g (1 cazo)'], ['Plátano', 1, 'ud'], ['Nueces', 30, 'g']] },
-      { time: '12:15 Pre-entreno',   items: [['Pasta', 100, 'g', 'rice'], ['Pechuga de pollo', 150, 'g'], ['Nectarina', 1, 'ud']] },
-      { time: '15:30 Post-entreno',  items: [['Pasta', 100, 'g', 'rice'], ['Babilla de ternera', 200, 'g'], ['Aceite de oliva', 12, 'g']] },
+      { time: '12:15 Pre-entreno',   items: [['Arroz', 100, 'g', 'rice'], ['Pechuga de pollo', 150, 'g'], ['Nectarina', 1, 'ud']] },
+      { time: '15:30 Post-entreno',  items: [['Arroz', 100, 'g', 'rice'], ['Babilla de ternera', 200, 'g'], ['Aceite de oliva', 12, 'g']] },
       { time: '19:00 Merienda',      items: [['Quinoa', 60, 'g'], ['Huevo entero', 1, 'ud'], ['Plátano', 1, 'ud']] },
-      { time: '21:30 Cena',          items: [['Patata', 400, 'g'], ['Bonito', 200, 'g'], ['Aceite de oliva', 13, 'g'], ['Ensalada', 1, 'ración'], ['AOVE (en ensalada)', 10, 'g']] },
+      { time: '21:30 Cena',          items: [['Patata', 400, 'g (o pasta 90 g en seco)'], ['Bonito', 200, 'g'], ['Aceite de oliva', 13, 'g'], ['Ensalada', 1, 'ración'], ['AOVE (en ensalada)', 10, 'g']] },
     ],
   },
 };
@@ -426,28 +426,28 @@ function buildAlerts() {
       if (wd !== null && wd <= -0.5) {
         out.push({ cls: 'ok', ico: '✅', msg: 'Peso estancado pero la cintura baja (' + wd.toFixed(1) + ' cm): recomposición, todo bien. No toques nada.' });
       } else {
-        out.push({ cls: 'warn', ico: '⚠️', msg: 'Estancado ' + (trend >= 0 ? '(+' : '(') + trend.toFixed(2) + ' kg/sem). Opciones: quitar 20 g de pasta o sumar 2.000 pasos/día.', btn: ['Aplicar −20 g pasta', () => applyRice(-20)] });
+        out.push({ cls: 'warn', ico: '⚠️', msg: 'Estancado ' + (trend >= 0 ? '(+' : '(') + trend.toFixed(2) + ' kg/sem). Opciones: quitar 20 g de arroz o sumar 2.000 pasos/día.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
       }
     } else if (trend > hi) {
-      out.push({ cls: 'warn', ico: '🐢', msg: 'Bajas algo lento: ' + trend.toFixed(2) + ' kg/sem (objetivo ' + lo + ' a ' + hi + '). Si sigue así 2 semanas, quita 20 g de pasta o suma 2.000 pasos/día.', btn: ['Aplicar −20 g pasta', () => applyRice(-20)] });
+      out.push({ cls: 'warn', ico: '🐢', msg: 'Bajas algo lento: ' + trend.toFixed(2) + ' kg/sem (objetivo ' + lo + ' a ' + hi + '). Si sigue así 2 semanas, quita 20 g de arroz o suma 2.000 pasos/día.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
     } else if (trend >= lo) {
       out.push({ cls: 'ok', ico: '✅', msg: 'Ritmo correcto: ' + trend.toFixed(2) + ' kg/sem (objetivo ' + lo + ' a ' + hi + ').' });
     } else if (trend >= -0.8) {
-      out.push({ cls: 'warn', ico: '⚡', msg: 'Bajas algo rápido: ' + trend.toFixed(2) + ' kg/sem (objetivo ' + lo + ' a ' + hi + '). Si no es agua de un cambio reciente de sal o carbos, suma 20 g de pasta.', btn: ['Aplicar +20 g pasta', () => applyRice(20)] });
+      out.push({ cls: 'warn', ico: '⚡', msg: 'Bajas algo rápido: ' + trend.toFixed(2) + ' kg/sem (objetivo ' + lo + ' a ' + hi + '). Si no es agua de un cambio reciente de sal o carbos, suma 20 g de arroz.', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
     } else {
-      out.push({ cls: 'serious', ico: '📉', msg: 'Bajas demasiado rápido (' + trend.toFixed(2) + ' kg/sem) — riesgo de perder músculo.', btn: ['Aplicar +20 g pasta', () => applyRice(20)] });
+      out.push({ cls: 'serious', ico: '📉', msg: 'Bajas demasiado rápido (' + trend.toFixed(2) + ' kg/sem) — riesgo de perder músculo.', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
     }
   } else if (ph === 'ganancia') {
     if (trend < 0.05) {
-      out.push({ cls: 'warn', ico: '⚠️', msg: 'No subes (' + trend.toFixed(2) + ' kg/sem). Si llevas así ≥3 semanas:', btn: ['Aplicar +20 g pasta', () => applyRice(20)] });
+      out.push({ cls: 'warn', ico: '⚠️', msg: 'No subes (' + trend.toFixed(2) + ' kg/sem). Si llevas así ≥3 semanas:', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
     } else if (trend < lo) {
-      out.push({ cls: 'warn', ico: '🐢', msg: 'Subes algo lento: +' + trend.toFixed(2) + ' kg/sem (objetivo +' + lo + ' a +' + hi + ').', btn: ['Aplicar +20 g pasta', () => applyRice(20)] });
+      out.push({ cls: 'warn', ico: '🐢', msg: 'Subes algo lento: +' + trend.toFixed(2) + ' kg/sem (objetivo +' + lo + ' a +' + hi + ').', btn: ['Aplicar +20 g arroz', () => applyRice(20)] });
     } else if (trend <= hi) {
       out.push({ cls: 'ok', ico: '✅', msg: 'Ritmo correcto: +' + trend.toFixed(2) + ' kg/sem (objetivo +' + lo + ' a +' + hi + ').' });
     } else if (trend <= 0.5) {
-      out.push({ cls: 'warn', ico: '⚡', msg: 'Subes algo rápido: +' + trend.toFixed(2) + ' kg/sem (objetivo +' + lo + ' a +' + hi + '). Parte del exceso será grasa.', btn: ['Aplicar −20 g pasta', () => applyRice(-20)] });
+      out.push({ cls: 'warn', ico: '⚡', msg: 'Subes algo rápido: +' + trend.toFixed(2) + ' kg/sem (objetivo +' + lo + ' a +' + hi + '). Parte del exceso será grasa.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
     } else {
-      out.push({ cls: 'serious', ico: '📈', msg: 'Subes demasiado rápido (+' + trend.toFixed(2) + ' kg/sem) — el exceso será grasa.', btn: ['Aplicar −20 g pasta', () => applyRice(-20)] });
+      out.push({ cls: 'serious', ico: '📈', msg: 'Subes demasiado rápido (+' + trend.toFixed(2) + ' kg/sem) — el exceso será grasa.', btn: ['Aplicar −20 g arroz', () => applyRice(-20)] });
     }
   } else {
     if (trend >= lo && trend <= hi) {
@@ -456,7 +456,7 @@ function buildAlerts() {
       out.push({ cls: 'info', ico: 'ℹ️', msg: 'Ligera deriva (' + (trend>0?'+':'') + trend.toFixed(2) + ' kg/sem, objetivo ' + lo + ' a +' + hi + '). Vigila otra semana antes de tocar nada.' });
     } else {
       const dir = trend > 0 ? -20 : 20;
-      out.push({ cls: 'warn', ico: '⚠️', msg: 'Peso derivando (' + (trend>0?'+':'') + trend.toFixed(2) + ' kg/sem) en mantenimiento.', btn: ['Aplicar ' + (dir>0?'+':'') + dir + ' g pasta', () => applyRice(dir)] });
+      out.push({ cls: 'warn', ico: '⚠️', msg: 'Peso derivando (' + (trend>0?'+':'') + trend.toFixed(2) + ' kg/sem) en mantenimiento.', btn: ['Aplicar ' + (dir>0?'+':'') + dir + ' g arroz', () => applyRice(dir)] });
     }
   }
 
@@ -560,7 +560,7 @@ function render() {
   document.getElementById('tBFDet').textContent = bf ? 'Medido ' + fmtDate(bf.d) + ' · ±3 % de error' : 'Mide cintura y cuello';
   const adj = S.riceAdj[S.phase];
   document.getElementById('tAdj').textContent = (adj > 0 ? '+' : '') + adj + ' g';
-  document.getElementById('tAdjDet').textContent = 'Pasta vs plan base · ' + PHASES[S.phase].label;
+  document.getElementById('tAdjDet').textContent = 'Arroz vs plan base · ' + PHASES[S.phase].label;
 
   // alerts
   const alerts = buildAlerts();
@@ -591,7 +591,7 @@ function render() {
     tabs.appendChild(b);
   }
 
-  // comidas con ajuste aplicado (mitad del ajuste a cada comida de pasta)
+  // comidas con ajuste aplicado (mitad del ajuste a cada comida de arroz)
   const ph = PHASES[S.phase];
   const half = S.riceAdj[S.phase] / 2;
   const mealsEl = document.getElementById('meals');
